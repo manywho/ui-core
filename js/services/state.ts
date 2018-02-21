@@ -7,6 +7,9 @@ import * as Settings from './settings';
 import * as Utils from './utils';
 import * as Validation from './validation';
 
+import store from '../store';
+import { updateComponent, replaceComponents } from '../actions/component';
+
 const loading = {};
 const components = {};
 const state = {};
@@ -101,7 +104,10 @@ export const setUserTime = (flowKey: string) => {
  * @param flowKey 
  */
 export const getComponent = (id: string, flowKey: string): IComponentValue => {
+
+    const { components } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
+
     return (components[lookUpKey] || {})[id];
 };
 
@@ -132,23 +138,12 @@ export interface IComponentValue {
  * @param push Set to true to call `Collaboration.push` after updating the component
  */
 export const setComponent = (id: string, value: IComponentValue, flowKey: string, push: boolean) => {
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-
-    components[lookUpKey][id] = Utils.extend(components[lookUpKey][id], value);
-
-    if (value != null)
-        components[lookUpKey][id].objectData = value.objectData;
-
-    if (typeof value.isValid === 'undefined' && components[lookUpKey][id].isValid === false) {
-        const model = Model.getComponent(id, flowKey);
-
-        if (model.isRequired &&
-            (!Utils.isNullOrEmpty(value.contentValue as string)  || (value.objectData && value.objectData.length > 0))) {
-
-            components[lookUpKey][id].isValid = true;
-            components[lookUpKey][id].validationMessage = null;
-        }
-    }
+    
+    store.dispatch(updateComponent({ 
+        flowKey, 
+        id,
+        value,        
+    }));
 
     if (push)
         Collaboration.push(id, value, flowKey);
@@ -160,8 +155,11 @@ export const setComponent = (id: string, value: IComponentValue, flowKey: string
  * @param flowKey 
  */
 export const setComponents = (values: any, flowKey: string) => {
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-    components[lookUpKey] = values;
+
+    store.dispatch(replaceComponents({ 
+        flowKey,
+        values,        
+    }));
 };
 
 export interface IPageComponentInputResponseRequest {

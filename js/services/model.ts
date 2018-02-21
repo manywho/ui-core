@@ -7,7 +7,8 @@ import * as Settings from './settings';
 import * as State from './state';
 import * as Utils from './utils';
 
-const flowModel = {};
+import store from '../store';
+import { replaceComponents, addFlow, replaceContainers } from '../actions/model';
 
 function decodeEntities(item, textArea) {
 
@@ -99,6 +100,7 @@ function getNavigationItems(itemsResponse, dataResponse) {
 }
 
 function hideContainers(lookUpKey) {
+    const { model: flowModel } = store.getState();
     const containers = Object.keys(flowModel[lookUpKey].containers).map(key => flowModel[lookUpKey].containers[key]);
     const components = Object.keys(flowModel[lookUpKey].components).map(key => flowModel[lookUpKey].components[key]);
     const outcomes = Object.keys(flowModel[lookUpKey].outcomes).map(key => flowModel[lookUpKey].outcomes[key]);
@@ -139,6 +141,8 @@ export interface INotification {
  * @param flowKey 
  */
 export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
+
+    const { model: flowModel } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
@@ -247,6 +251,8 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
  */
 export const parseEngineSyncResponse = (response, flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
+
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (response.invokeType)
@@ -281,6 +287,8 @@ export const parseEngineSyncResponse = (response, flowKey: string) => {
  */
 export const parseNavigationResponse = (id: string, response, flowKey: string, currentMapElementId: string) => {
 
+    const { model: flowModel } = store.getState();
+    
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     flowModel[lookUpKey].navigation = {};
@@ -329,6 +337,7 @@ export const parseNavigationResponse = (id: string, response, flowKey: string, c
  * Get the label of the current page
  */
 export const getLabel = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].label;
 };
@@ -337,7 +346,9 @@ export const getLabel = (flowKey: string) => {
  * Get an ordered array of all the child models of a container
  */
 export const getChildren = (containerId: string, flowKey: string) => {
-
+    
+    const { model: flowModel } = store.getState();
+    
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey] === undefined || flowModel[lookUpKey].containers === undefined)
@@ -363,6 +374,7 @@ export const getChildren = (containerId: string, flowKey: string) => {
  * Get a container by id
  */
 export const getContainer = (containerId: string, flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].containers[containerId];
 };
@@ -371,6 +383,7 @@ export const getContainer = (containerId: string, flowKey: string) => {
  * Get a component by id
  */
 export const getComponent = (componentId: string, flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].components[componentId];
 };
@@ -379,6 +392,7 @@ export const getComponent = (componentId: string, flowKey: string) => {
  * Get a component by name
  */
 export const getComponentByName = (name: string, flowKey: string) => {
+    const { model: flowModel } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
     const components = flowModel[lookUpKey].components;
@@ -397,6 +411,7 @@ export const getComponentByName = (name: string, flowKey: string) => {
  * Get all the components
  */
 export const getComponents = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].components;
 };
@@ -405,7 +420,7 @@ export const getComponents = (flowKey: string) => {
  * Get an outcome by id
  */
 export const getOutcome = (id: string, flowKey: string) => {
-
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey].outcomes)
@@ -417,6 +432,8 @@ export const getOutcome = (id: string, flowKey: string) => {
  * @param id Id of the component or container that the outcomes are associated with
  */
 export const getOutcomes = (id: string, flowKey: string): any[] => {
+
+    const { model: flowModel } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
@@ -440,6 +457,7 @@ export const getOutcomes = (id: string, flowKey: string): any[] => {
  */
 export const getNotifications = (flowKey: string, position: string): INotification[] => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey].notifications)
@@ -453,6 +471,7 @@ export const getNotifications = (flowKey: string, position: string): INotificati
  */
 export const removeNotification = (flowKey: string, notification: INotification) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey]) {
@@ -469,6 +488,7 @@ export const removeNotification = (flowKey: string, notification: INotification)
  */
 export const addNotification = (flowKey: string, notification: INotification) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey]) {
@@ -484,6 +504,7 @@ export const addNotification = (flowKey: string, notification: INotification) =>
  * @ignore
  */
 export const getSelectedNavigation = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].selectedNavigation;
 };
@@ -492,6 +513,7 @@ export const getSelectedNavigation = (flowKey: string) => {
  * @ignore
  */
 export const setSelectedNavigation = (navigationId: string, flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     flowModel[lookUpKey].selectedNavigation = navigationId;
 };
@@ -501,6 +523,7 @@ export const setSelectedNavigation = (navigationId: string, flowKey: string) => 
  */
 export const getNavigation = (navigationId: string, flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (navigationId)
@@ -512,6 +535,7 @@ export const getNavigation = (navigationId: string, flowKey: string) => {
  */
 export const getDefaultNavigationId = (flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (flowModel[lookUpKey].navigation)
@@ -544,6 +568,7 @@ export const getItem = (id: string, flowKey: string) => {
  * @ignore
  */
 export const getInvokeType = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].invokeType;
 };
@@ -552,6 +577,7 @@ export const getInvokeType = (flowKey: string) => {
  * @ignore
  */
 export const getWaitMessage = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].waitMessage;
 };
@@ -560,6 +586,7 @@ export const getWaitMessage = (flowKey: string) => {
  * @ignore
  */
 export const getPreCommitStateValues = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].preCommitStateValues;
 };
@@ -568,6 +595,7 @@ export const getPreCommitStateValues = (flowKey: string) => {
  * @ignore
  */
 export const getStateValues = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].stateValues;
 };
@@ -576,6 +604,7 @@ export const getStateValues = (flowKey: string) => {
  * @ignore
  */
 export const getExecutionLog = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].executionLog;
 };
@@ -584,6 +613,7 @@ export const getExecutionLog = (flowKey: string) => {
  * @ignore
  */
 export const setExecutionLog = (flowKey: string, executionLog) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     flowModel[lookUpKey].executionLog = executionLog;
 };
@@ -593,6 +623,7 @@ export const setExecutionLog = (flowKey: string, executionLog) => {
  */
 export const getHistory = (flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (!flowModel[lookUpKey].history)
@@ -606,6 +637,7 @@ export const getHistory = (flowKey: string) => {
  */
 export const setHistory = (engineInvokeResponse, flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (!flowModel[lookUpKey].history)
@@ -639,6 +671,7 @@ export const setHistory = (engineInvokeResponse, flowKey: string) => {
  */
 export const setHistorySelectedOutcome = (selectedOutcome, invokeType: string, flowKey: string) => {
 
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     flowModel[lookUpKey].lastInvoke = invokeType;
@@ -661,6 +694,8 @@ export const setHistorySelectedOutcome = (selectedOutcome, invokeType: string, f
  * @hidden
  */
 export const popHistory = (mapElementId: string, flowKey: string) => {
+
+    const { model: flowModel } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
@@ -689,8 +724,12 @@ export const isContainer = (item) => {
  */
 export const initializeModel = (flowKey: string) => {
 
-    const lookUpKey = Utils.getLookUpKey(flowKey);
+    const { model: flowModel } = store.getState();
 
+    const lookUpKey = Utils.getLookUpKey(flowKey);
+    
+    store.dispatch(addFlow({ flowKey }));
+    
     if (!flowModel[lookUpKey])
         flowModel[lookUpKey] = {};
 };
@@ -699,6 +738,7 @@ export const initializeModel = (flowKey: string) => {
  * @ignore
  */
 export const getAttributes = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].attributes;
 };
@@ -707,6 +747,7 @@ export const getAttributes = (flowKey: string) => {
  * @ignore
  */
 export const getParentStateId = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].parentStateId;
 };
@@ -715,6 +756,7 @@ export const getParentStateId = (flowKey: string) => {
  * Remove the local cache of the model for this state
  */
 export const deleteFlowModel = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
@@ -726,6 +768,7 @@ export const deleteFlowModel = (flowKey: string) => {
  * @ignore
  */
 export const getRootFaults = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].rootFaults || [];
 };
@@ -735,23 +778,7 @@ export const getRootFaults = (flowKey: string) => {
  */
 export const setContainers = (flowKey: string, containers: any[], data: any, propertyName?: string) => {
 
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-
-    propertyName = propertyName || 'pageContainerResponses';
-
-    if (containers) {
-
-        flowModel[lookUpKey].containers = {};
-
-        const flattenedContainers = flattenContainers(containers, null, [], propertyName);
-        flattenedContainers.forEach((item) => {
-
-            flowModel[lookUpKey].containers[item.id] = item;
-
-            if (data && Utils.contains(data, item.id, 'pageContainerId'))
-                flowModel[lookUpKey].containers[item.id] = updateData(data, item, 'pageContainerId');
-        });
-    }
+    store.dispatch(replaceContainers({ flowKey, containers, data, propertyName }));
 };
 
 /**
@@ -759,38 +786,14 @@ export const setContainers = (flowKey: string, containers: any[], data: any, pro
  */
 export const setComponents = (flowKey: string, components: any[], data: any) => {
 
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-
-    if (components) {
-
-        flowModel[lookUpKey].components = {};
-
-        const decodeTextArea = document.createElement('textarea');
-
-        components.forEach((item) => {
-
-            item.attributes = item.attributes || {};
-
-            flowModel[lookUpKey].components[item.id] = item;
-
-            if (!flowModel[lookUpKey].containers[item.pageContainerId].childCount)
-                flowModel[lookUpKey].containers[item.pageContainerId].childCount = 0;
-
-            flowModel[lookUpKey].containers[item.pageContainerId].childCount += 1;
-
-            if (data && Utils.contains(data, item.id, 'pageComponentId'))
-                flowModel[lookUpKey].components[item.id] = updateData(data, item, 'pageComponentId');
-
-            flowModel[lookUpKey].components[item.id] = decodeEntities(flowModel[lookUpKey].components[item.id], decodeTextArea);
-
-        });
-    }
+    store.dispatch(replaceComponents({ flowKey, components, data }));
 };
 
 /**
  * @ignore
  */
 export const setAttributes = (flowKey: string, attributes: any) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     flowModel[lookUpKey].attributes = attributes;
 };
@@ -799,6 +802,7 @@ export const setAttributes = (flowKey: string, attributes: any) => {
  * @ignore
  */
 export const setModal = (flowKey: string, modal) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     flowModel[lookUpKey].modal = modal;
     Engine.render(flowKey);
@@ -808,6 +812,7 @@ export const setModal = (flowKey: string, modal) => {
  * @ignore
  */
 export const getModal = (flowKey: string) => {
+    const { model: flowModel } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].modal;
 };
