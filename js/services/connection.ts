@@ -3,6 +3,12 @@ import * as Log from 'loglevel';
 import * as Settings from './settings';
 import * as Utils from './utils';
 
+declare const localforage: any;
+declare const manywho: any;
+declare const jQuery: any;
+
+localforage.setDriver(['asyncStorage', 'webSQLStorage']);
+
 /**
  * @private
  * */
@@ -45,26 +51,41 @@ export const request = (context,
                         data: object) => {
     let json = null;
 
-    if (data != null)
-        json = JSON.stringify(data);
 
-    return $.ajax({
-        type,
-        url: Settings.global('platform.uri') + url,
-        dataType: 'json',
-        contentType: 'application/json',
-        processData: true,
-        data: json,
-        beforeSend: (xhr) => {
-            beforeSend.call(this, xhr, tenantId, authenticationToken, event, data);
+    const dfd = jQuery.Deferred();
+    localforage.getItem(`responses`)
+    .then((value) => {
+        if (value === 'test') {
+            dfd.resolve(value);
+        }
+        else {
+            if (data != null)
+                json = JSON.stringify(data);
+        
+            return $.ajax({
+                type,
+                url: Settings.global('platform.uri') + url,
+                dataType: 'json',
+                contentType: 'application/json',
+                processData: true,
+                data: json,
+                beforeSend: (xhr) => {
+                    beforeSend.call(this, xhr, tenantId, authenticationToken, event, data);
+        
+                    if (!Utils.isNullOrWhitespace(stateId))
+                        xhr.setRequestHeader('ManyWhoState', stateId);
+                },
+            })
+            .then((data) => {
+                dfd.resolve(data);
+            })
+            .done(Settings.event(event + '.done'))
+            .fail(onError)
+            .fail(Settings.event(event + '.fail'));                
+        }
+    });
 
-            if (!Utils.isNullOrWhitespace(stateId))
-                xhr.setRequestHeader('ManyWhoState', stateId);
-        },
-    })
-    .done(Settings.event(event + '.done'))
-    .fail(onError)
-    .fail(Settings.event(event + '.fail'));
+    return dfd.promise();
 };
 
 /**

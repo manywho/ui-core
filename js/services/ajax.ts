@@ -29,7 +29,7 @@ export const dispatchDataRequest = (
         orderBy: string,
         orderByDirection: string,
         page: number,
-    ): JQueryXHR => {
+    ): any => {
 
     request.listFilter = request.listFilter || {};
     request.listFilter.search = search || null;
@@ -61,7 +61,7 @@ export const login = (
     sessionUrl: string, 
     stateId: string, 
     tenantId: string,
-): JQueryXHR => {
+): any => {
 
     Log.info('Logging into Flow State: \n    Id: ' + stateId);
 
@@ -80,7 +80,7 @@ export const login = (
 /**
  * POST to `/api/run/1` to initialize a state
  */
-export const initialize = (engineInitializationRequest: any, tenantId: string, authenticationToken: string): JQueryXHR => {
+export const initialize = (engineInitializationRequest: any, tenantId: string, authenticationToken: string): any => {
     Log.info(`Initializing Flow: \n Id: ${engineInitializationRequest.flowId.id} \n Version Id: '${engineInitializationRequest.flowId.versionId}`);
     return Connection.request(null, 'initialization', '/api/run/1', 'POST', tenantId, null, authenticationToken, engineInitializationRequest);
 };
@@ -88,7 +88,7 @@ export const initialize = (engineInitializationRequest: any, tenantId: string, a
 /**
  * POST to `/api/run/1/state/out/stateId/selectedOutcomeId` to flow out
  */
-export const flowOut = (stateId: string, tenantId: string, selectedOutcomeId: string, authenticationToken: string): JQueryXHR => {
+export const flowOut = (stateId: string, tenantId: string, selectedOutcomeId: string, authenticationToken: string): any => {
     return Connection.request(
         null, 
         'flowOut',
@@ -104,7 +104,7 @@ export const flowOut = (stateId: string, tenantId: string, selectedOutcomeId: st
 /**
  * GET the state of currently executing flow at `/api/run/1/state/stateId`
  */
-export const join = (stateId: string, tenantId: string, authenticationToken: string): JQueryXHR => {
+export const join = (stateId: string, tenantId: string, authenticationToken: string): any => {
     Log.info('Joining State: ' + stateId);
     return Connection.request(null, 'join', '/api/run/1/state/' + stateId, 'GET', tenantId, stateId, authenticationToken, null);
 };
@@ -112,7 +112,7 @@ export const join = (stateId: string, tenantId: string, authenticationToken: str
 /**
  * POST to `/api/run/1/state/engineInvokeRequest.stateId` to update the state of the flow
  */
-export const invoke = (engineInvokeRequest: any, tenantId: string, authenticationToken: string): JQueryXHR => {
+export const invoke = (engineInvokeRequest: any, tenantId: string, authenticationToken: string): any => {
     Log.info('Invoking State: ' + engineInvokeRequest.stateId);
     return Connection.request(
         null, 
@@ -135,7 +135,7 @@ export const getNavigation = (
     navigationElementId: string, 
     tenantId: string, 
     authenticationToken?: string,
-): JQueryXHR => {
+): any => {
     const request = { stateId, stateToken, navigationElementId };
     return Connection.request(null, 'navigation', '/api/run/1/navigation/' + stateId, 'POST', tenantId, stateId, authenticationToken, request);
 };
@@ -143,7 +143,7 @@ export const getNavigation = (
 /**
  * GET at `/api/run/1/flow/name/name`
  */
-export const getFlowByName = (name: string, tenantId: string, authenticationToken: string): JQueryXHR => {
+export const getFlowByName = (name: string, tenantId: string, authenticationToken: string): any => {
     return Connection.request(null, 'getFlowByName', '/api/run/1/flow/name/' + name, 'GET', tenantId, null, authenticationToken, null);
 };
 
@@ -247,7 +247,7 @@ export const uploadSocialFile = (
 /**
  * POST to `/api/run/1/authentication/stateId`
  */
-export const sessionAuthentication = (tenantId: string, stateId: string, request: any, authenticationToken: string): JQueryXHR => {
+export const sessionAuthentication = (tenantId: string, stateId: string, request: any, authenticationToken: string): any => {
     Log.info('Authenticating using session ID');
     return Connection.request(
         null, 
@@ -264,7 +264,7 @@ export const sessionAuthentication = (tenantId: string, stateId: string, request
 /**
  * GET at `/api/run/1/state/stateId/ping/`
  */
-export const ping = (tenantId: string, stateId: string, stateToken: string, authenticationToken: string): JQueryXHR => {
+export const ping = (tenantId: string, stateId: string, stateToken: string, authenticationToken: string): any => {
     Log.info('Pinging for changes');
     return Connection.request(
         null, 
@@ -281,7 +281,7 @@ export const ping = (tenantId: string, stateId: string, stateToken: string, auth
 /**
  * GET at `/api/log/flowId/stateId`
  */
-export const getExecutionLog = (tenantId: string, flowId: string, stateId: string, authenticationToken: string): JQueryXHR => {
+export const getExecutionLog = (tenantId: string, flowId: string, stateId: string, authenticationToken: string): any => {
     Log.info('Getting Execution Log');
     return Connection.request(null, 'log', '/api/log/' + flowId + '/' + stateId, 'GET', tenantId, stateId, authenticationToken, null);
 };
@@ -289,7 +289,7 @@ export const getExecutionLog = (tenantId: string, flowId: string, stateId: strin
 /**
  * GET at `/api/social/1/stream/streamId/user/me`
  */
-export const getSocialMe = (tenantId: string, streamId: string, stateId: string, authenticationToken: string): JQueryXHR => {
+export const getSocialMe = (tenantId: string, streamId: string, stateId: string, authenticationToken: string): any => {
     Log.info('Getting Social User, Me');
     return Connection.request(null, 'social', '/api/social/1/stream/' + streamId + '/user/me', 'GET', tenantId, stateId, authenticationToken, null);
 };
@@ -297,7 +297,7 @@ export const getSocialMe = (tenantId: string, streamId: string, stateId: string,
 /**
  * GET at `/api/social/1/stream/streamId/follower`
  */
-export const getSocialFollowers = (tenantId: string, streamId: string, stateId: string, authenticationToken: string): JQueryXHR => {
+export const getSocialFollowers = (tenantId: string, streamId: string, stateId: string, authenticationToken: string): any => {
     Log.info('Getting Social Followers');
     return Connection.request(null, 'social', '/api/social/1/stream/' + streamId + '/follower', 'GET', tenantId, stateId, authenticationToken, null);
 };
@@ -312,7 +312,7 @@ export const getSocialMessages = (
     page: number, 
     pageSize: number, 
     authenticationToken: string,
-): JQueryXHR => {
+): any => {
     Log.info('Getting Social Messages');
     return Connection.request(
         null, 
@@ -329,7 +329,7 @@ export const getSocialMessages = (
 /**
  * POST to `/api/social/1/stream/streamId/message`
  */
-export const sendSocialMessage = (tenantId: string, streamId: string, stateId: string, request: any, authenticationToken: string): JQueryXHR => {
+export const sendSocialMessage = (tenantId: string, streamId: string, stateId: string, request: any, authenticationToken: string): any => {
     Log.info('Sending Social Message');
     return Connection.request(
         null, 
@@ -346,7 +346,7 @@ export const sendSocialMessage = (tenantId: string, streamId: string, stateId: s
 /**
  * POST to `/api/social/1/stream/streamId?follow=isFollowing`
  */
-export const follow = (tenantId: string, streamId: string, stateId: string, isFollowing: boolean, authenticationToken: string): JQueryXHR => {
+export const follow = (tenantId: string, streamId: string, stateId: string, isFollowing: boolean, authenticationToken: string): any => {
     Log.info('Following Social Message');
     return Connection.request(
         null, 
@@ -363,7 +363,7 @@ export const follow = (tenantId: string, streamId: string, stateId: string, isFo
 /**
  * GET at `/api/social/1/stream/streamId/user?name=name`
  */
-export const getSocialUsers = (tenantId: string, streamId: string, stateId: string, name: string, authenticationToken: string): JQueryXHR => {
+export const getSocialUsers = (tenantId: string, streamId: string, stateId: string, name: string, authenticationToken: string): any => {
     Log.info('Following Social Message');
     return Connection.request(
         null, 
