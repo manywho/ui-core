@@ -29,6 +29,7 @@ export const beforeSend = (xhr: XMLHttpRequest, tenantId: string, authentication
         Settings.event(event + '.beforeSend').call(this, xhr, request);
 };
 
+
 /**
  * Make an AJAX request to the Boomi Flow platform
  * @param context TODO
@@ -51,17 +52,44 @@ export const request = (context,
                         data: object) => {
     let json = null;
 
+    const cachedResponseKeys = [
+        'navigationElementId',
+        'currentMapElementId',
+        'typeElementBindingId',
+    ]; 
+
+    const getResponseKey = () => {
+        let key = null;
+        if (data) {
+            cachedResponseKeys.forEach((responseKey) => {
+                if (responseKey in data) {
+                    if (data[responseKey] !== null) {
+                        key = data[responseKey];
+                    }
+                }
+            });
+        }
+        return key;
+    };
 
     const dfd = jQuery.Deferred();
-    localforage.getItem(`responses`)
-    .then((value) => {
-        if (value === 'test') {
-            dfd.resolve(value);
+    const key = getResponseKey();
+
+    const responses = localforage.getItem(`responses`)
+    .then((responses) => {
+        let resp = null;
+        if (responses && key !== null) {
+            resp = responses.filter((response) => {
+                return response['key'] === key;
+            });
+        }
+        if (resp !== null && resp.length !== 0) {
+            dfd.resolve(JSON.parse(resp[0].response));
         }
         else {
             if (data != null)
                 json = JSON.stringify(data);
-        
+    
             return $.ajax({
                 type,
                 url: Settings.global('platform.uri') + url,
@@ -81,10 +109,11 @@ export const request = (context,
             })
             .done(Settings.event(event + '.done'))
             .fail(onError)
-            .fail(Settings.event(event + '.fail'));                
+            
+            .fail(Settings.event(event + '.fail'));
         }
     });
-
+    
     return dfd.promise();
 };
 
