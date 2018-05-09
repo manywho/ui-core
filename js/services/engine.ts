@@ -462,7 +462,7 @@ function moveWithAuthorization(callback, invokeRequest, flowKey) {
             State.setState(response.stateId, response.stateToken, response.currentMapElementId, flowKey);
             State.setLocation(flowKey);
 
-            if (response.mapElementInvokeResponses[0].outcomeResponses)
+            if (response.mapElementInvokeResponses.length > 0 && response.mapElementInvokeResponses[0].outcomeResponses)
                 outcome = response.mapElementInvokeResponses[0].outcomeResponses.find(outcome => outcome.id === selectedOutcomeId);
 
             if (Collaboration.isInitialized(flowKey) && (!outcome || !outcome.isOut)) {
