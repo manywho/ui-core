@@ -16,6 +16,7 @@ const ReactDOM = {
 
 const ajax = {
     initialize: sinon.stub(),
+    initializeSimple: sinon.stub(),
     invoke: sinon.stub(),
     ping: sinon.stub().resolves({}),
     dispatchObjectDataRequest: sinon.stub(),
@@ -121,6 +122,7 @@ test.afterEach((t) => {
     (Engine.join as sinon.SinonStub).resetHistory();
     (Utils.removeFlow as sinon.SinonStub).resetHistory();
     (Engine.render as sinon.SinonStub).resetHistory();
+    (model.setSelectedNavigation as sinon.SinonStub).resetHistory();
 
     state.setState.resetHistory();
     model.parseEngineResponse.resetHistory();
@@ -220,6 +222,179 @@ test.serial('Initialize', (t) => {
             t.true(state.setState.calledWith(invokeResponse.stateId, invokeResponse.stateToken, invokeResponse.currentMapElementId, flowKey));
             t.true(state.setLocation.calledWith(flowKey));
             t.true(social.initialize.calledWith(flowKey, invokeResponse.currentStreamId));
+        });
+});
+
+test.serial('Initialize Simple', (t) => {
+    const initializeResponse = {
+        alertEmail: null,
+        annotations: null,
+        authorizationContext: {
+            authenticationType: 'USERNAME_PASSWORD',
+            directoryId: null,
+            directoryName: null,
+            loginUrl: null,
+        },
+        culture: {
+            brand: null,
+            country: 'USA',
+            developerName: null,
+            developerSummary: null,
+            id: null,
+            language:'EN',
+            variant: null,
+        },
+        currentMapElementId: 'eea2bbdd-363e-424e-828b-f4e29eda7949',
+        currentStreamId: 'streamid',
+        invokeType: 'FORWARD',
+        joinFlowUri: null,
+        mapElementInvokeResponses: [
+            {
+                developerName: 'Flow List',
+                mapElementId: 'eea2bbdd-363e-424e-828b-f4e29eda7949',
+                outcomeResponses: [
+                    {
+                        attributes: {
+                            display: 'ICONANDTEXT',
+                        },
+                        developerName: 'New',
+                        id: '95b5a2e3-f802-43e1-81a3-391e4f32f82b',
+                        isBulkAction: true,
+                        isOut: false,
+                        label: 'New Flow',
+                        order: 0,
+                        pageActionBindingType: 'PARTIAL_SAVE',
+                        pageActionType: 'ADD',
+                        pageObjectBindingId: '2c81d283-1ba0-44c1-aef4-4a4639b6428e',
+                    },            
+                ],
+                pageResponse: {
+                    attributes: null,
+                    label: null,
+                    order: 0,
+                    pageComponentDataResponses: [],
+                    pageComponentResponses: [
+                        {
+                            attributes: null,
+                            columns: null,
+                            componentType: 'presentation',
+                            contentType: null,
+                            developerName: 'Intro',
+                            hasEvents: false,
+                            height: 0,
+                            helpInfo: null,
+                            hintValue: null,
+                            id: 'fa0c3578-208e-0d02-aa70-0ee37a5b7747',
+                            isMultiSelect: false,
+                            isSearchable: false,
+                            label: '',
+                            maxSize: 0,
+                            order: 0,
+                            pageContainerDeveloperName: 'Root',
+                            pageContainerId: 'd305ca82-a2a0-48aa-8f6e-8a7932c321d2',
+                            size: 0,
+                            width: 0,
+                        },
+                    ],
+                    pageContainerDataResponses: [
+                        {
+                            isEditable: true,
+                            isEnabled: true,
+                            isVisible: true,
+                            pageContainerId: 'd305ca82-a2a0-48aa-8f6e-8a7932c321d2',
+                            tags: null,
+                        },
+                    ],
+                    pageContainerResponses: [
+                        {
+                            attributes: null,
+                            containerType: 'VERTICAL_FLOW',
+                            developerName: 'Root',
+                            id: 'd305ca82-a2a0-48aa-8f6e-8a7932c321d2',
+                            label: '',
+                            order: 0,
+                            pageContainerResponses: null,
+                        },
+                    ],
+                    tags: null,
+                },
+                rootFaults: null,
+            },
+        ],
+        navigationElementReferences: [
+            {
+                developerName: 'Flows',
+                id: 'ab233fa1-d11d-4c32-9622-36da3ea49415',
+            },
+        ],
+        notAuthorizedMessage: null,
+        outputs: null,
+        parentStateId: null,
+        preCommitStateValues: null,
+        stateId: '3ef2ce0f-fc6c-4cb9-b7a6-b87c19f5a262',
+        stateLog: null,
+        stateToken: '12b9a0c3-3288-4422-93c8-1ec331f0d6a2',
+        stateValues: null,
+        statusCode: 200,
+        voteResponse: null,
+        waitMessage: null,
+    };
+
+    ajax.initializeSimple.callsFake(() => {
+        const deferred = $.Deferred();
+        deferred.resolve(initializeResponse);
+        return deferred;
+    });
+
+    ajax.getNavigation.callsFake(() => {
+        const deferred = $.Deferred();
+        deferred.resolve({
+            developerName: 'Test Navigation',
+            isEnabled: true,
+            isVisible: true,
+            navigationItemDataResponses: [{
+                isActive: false,
+                isCurrent: true,
+                isEnabled: true,
+                isVisible: true,
+                locationMapElementId: '735487cb-21e2-4467-b560-d725648b6257',
+                navigationItemDeveloperName: 'Home',
+                navigationItemId: 'c5086605-f34e-4d06-ba9e-83144e990641',
+            }],
+            navigationItemResponses: [{
+                developerName: 'Home',
+                id: 'c5086605-f34e-4d06-ba9e-83144e990641',
+                label: 'Home',
+                navigationItems: null,
+                order: 0,
+            }],
+        });
+        return deferred;
+    });
+
+    const options = {
+        navigationElementId: 'navigationId',
+    };
+
+    return Engine.initializeSimple('key1', 'name', 'key2', 'key3', 'username', 'password', ['input'], options, 'container')
+        .always((flowKey) => {
+            t.not(flowKey, null);
+            t.true(model.initializeModel.calledWith(flowKey));
+            t.true(model.setSelectedNavigation.calledTwice);
+            t.true(model.setSelectedNavigation.firstCall.calledWith(initializeResponse.navigationElementReferences[0].id, flowKey));
+            t.true(model.setSelectedNavigation.secondCall.calledWith(options.navigationElementId, flowKey));
+            t.true(state.setComponentLoading.calledTwice);
+            t.true(state.setComponentLoading.firstCall.calledWith('container', { message: '' }, flowKey));
+            t.true(state.setComponentLoading.secondCall.calledWith('container', null, flowKey));
+            t.true(model.parseEngineResponse.calledOnce);
+            t.true(state.setState.calledWith(
+                initializeResponse.stateId,
+                initializeResponse.stateToken,
+                initializeResponse.currentMapElementId,
+                flowKey,
+            ));
+            t.true(state.setLocation.calledWith(flowKey));
+            t.true(social.initialize.calledWith(flowKey, initializeResponse.currentStreamId));
         });
 });
 
