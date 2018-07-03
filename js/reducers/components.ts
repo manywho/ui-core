@@ -1,7 +1,9 @@
-import { merge, isNil, set, lensPath, view } from 'ramda';
+import { merge, isNil, set, lensPath, view, assoc } from 'ramda';
 import actionType from '../actions/actionType';
 import * as Model from '../services/model';
 import * as Utils from '../services/utils';
+import { shouldValidate } from '../services/validation';
+import { isValid } from '../services/state';
 
 // Subscribes to events related to components within the state
 // Handles ALL modifications to components
@@ -19,6 +21,10 @@ function components(allComponents = {}, action) {
         return replaceComponents(allComponents, action);        
     }
 
+    case actionType.STATE_RESET_COMPONENTS: {
+        return resetComponents(allComponents, action);        
+    }
+
     } // End switch
 
     // Action not caught
@@ -33,35 +39,70 @@ const replaceComponents = (allComponents, { flowKey, values }) => {
     return newComponents;
 };
 
-const updateComponent = (allComponents, { flowKey, id, value }) => {
+const updateComponent = (allComponents, { flowKey, id: componentId, value }) => {
     
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    // A lens to the nested component
-    const componentLens = lensPath([lookUpKey, id]);
 
-    // update the value property on the component
-    set(componentLens, { value }, allComponents);
 
-    if (!isNil(value)) {
-        // update the objectData property to value.objectData
-        set(componentLens, { objectData: value.objectData }, allComponents);
-    }
+    // get components for just this flow
+    const flowComponents = allComponents[lookUpKey];
+    // get the component we need to make updates to
+    const componentToUpdate = flowComponents[componentId];
 
-    if (
-        typeof value.isValid === 'undefined' 
-        && view(lensPath([lookUpKey, id, 'isValid']), allComponents) === false
-    ) {
-        const model = Model.getComponent(id, flowKey);
+    // const isValid = 
+    //     isNil(value.isValid) && componentToUpdate.isValid === false
+    //     ? 
 
-        if (model.isRequired &&
-            (!Utils.isNullOrEmpty(value.contentValue as string) || (value.objectData && value.objectData.length > 0))
-        ) {
-            set(componentLens, { isValid: true, validationMessage: null }, allComponents);
-        }
-    }
+    // update the component by merging the properties inside value
+    const newComponent = merge(componentToUpdate, value);
 
-    return allComponents;
+    // if (
+    //     typeof value.isValid === 'undefined' 
+    //     && newComponent.isValid === false
+    // ) {
+    //     const model = Model.getComponent(id, flowKey);
+
+    //     if (model.isRequired &&
+    //         (!Utils.isNullOrEmpty(value.contentValue as string) || (value.objectData && value.objectData.length > 0))
+    //     ) {
+    //         set(componentLens, { isValid: true, validationMessage: null }, allComponents);
+    //     }
+    // }
+
+    const newFlowComponents = assoc(componentId, newComponent, flowComponents);
+    const newAllComponents = assoc(lookUpKey, newFlowComponents, allComponents);
+
+    return newAllComponents;
+};
+
+/**
+ * Reset the local state of each component defined in the models. Optionally perform validation on each model
+ */
+const resetComponents = (allComponents, { models, invokeType, flowKey }) => {
+    const flowLookUpKey = Utils.getLookUpKey(flowKey);
+    const flowComponents = {}; 
+
+    Object.keys(models).forEach((modelId) => {
+        let selectedObjectData = null;
+        const model = models[modelId];
+
+        // We need to do a little work on the object data as we only want the selected values in the state
+        if (model.objectData && !Utils.isEmptyObjectData(model))
+            selectedObjectData = model.objectData.filter(item => item.isSelected);
+
+        flowComponents[model.id] = {
+            contentValue: model.contentValue || null,
+            objectData: selectedObjectData || null,
+        };
+
+        if (shouldValidate(invokeType, flowKey))
+            flowComponents[model.id] = merge(flowComponents[model.id], isValid(model.id, flowKey));
+    });
+
+    const newComponents = assoc(flowLookUpKey, flowComponents, allComponents);
+
+    return newComponents;
 };
 
 export default components;

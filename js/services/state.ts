@@ -8,7 +8,9 @@ import * as Utils from './utils';
 import * as Validation from './validation';
 
 import store from '../store';
-import { updateComponent, replaceComponents } from '../actions/component';
+import { 
+    updateComponent, replaceComponents, resetComponents,
+} from '../actions/component';
 
 const loading = {};
 const components = {};
@@ -24,26 +26,31 @@ const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
  * Reset the local state of each component defined in the models. Optionally perform validation on each model
  */
 export const refreshComponents = (models: any, invokeType: string, flowKey: string) => {
-    const lookUpKey = Utils.getLookUpKey(flowKey);
+    
+    store.dispatch(resetComponents({ 
+        models, invokeType, flowKey,        
+    }));
 
-    components[lookUpKey] = {};
+    // const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    for (const id in models) {
+    // components[lookUpKey] = {};
 
-        let selectedObjectData = null;
+    // for (const id in models) {
 
-        // We need to do a little work on the object data as we only want the selected values in the state
-        if (models[id].objectData && !Utils.isEmptyObjectData(models[id]))
-            selectedObjectData = models[id].objectData.filter(item => item.isSelected);
+    //     let selectedObjectData = null;
 
-        components[lookUpKey][id] = {
-            contentValue: models[id].contentValue || null,
-            objectData: selectedObjectData || null,
-        };
+    //     // We need to do a little work on the object data as we only want the selected values in the state
+    //     if (models[id].objectData && !Utils.isEmptyObjectData(models[id]))
+    //         selectedObjectData = models[id].objectData.filter(item => item.isSelected);
 
-        if (Validation.shouldValidate(invokeType, flowKey))
-            components[lookUpKey][id] = $.extend({}, components[lookUpKey][id], isValid(id, flowKey));
-    }
+    //     components[lookUpKey][id] = {
+    //         contentValue: models[id].contentValue || null,
+    //         objectData: selectedObjectData || null,
+    //     };
+
+    //     if (Validation.shouldValidate(invokeType, flowKey))
+    //         components[lookUpKey][id] = $.extend({}, components[lookUpKey][id], isValid(id, flowKey));
+    // }
 };
 
 /**
@@ -174,6 +181,7 @@ export interface IPageComponentInputResponseRequest {
 export const getPageComponentInputResponseRequests = (flowKey: string): IPageComponentInputResponseRequest[] => {
     const lookUpKey = Utils.getLookUpKey(flowKey);
     let pageComponentInputResponseRequests = null;
+    const { components } = store.getState();
 
     if (components[lookUpKey] != null) {
 

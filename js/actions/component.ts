@@ -15,3 +15,9 @@ export const replaceComponents = ({ values, flowKey }) => ({
     type: actionType.STATE_SET_COMPONENTS,
 });
 
+export const resetComponents = ({ models, invokeType, flowKey }) => ({
+    flowKey,
+    invokeType,
+    models,
+    type: actionType.STATE_RESET_COMPONENTS,
+});

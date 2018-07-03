@@ -58,29 +58,30 @@ const setContainers = (flows, { flowKey, containers, data, propertyName }) => {
 // TODO: make immutable
 const setComponents = (flows, { flowKey, components, data }) => {
 
-    const lookUpKey = Utils.getLookUpKey(flowKey);
+    const flowLookUpKey = Utils.getLookUpKey(flowKey);
+    const flow = flows[flowLookUpKey];
 
     if (components) {
 
-        flows[lookUpKey].components = {};
-
         const decodeTextArea = document.createElement('textarea');
+        
+        flow.components = {};
 
         components.forEach((item) => {
 
             item.attributes = item.attributes || {};
 
-            flows[lookUpKey].components[item.id] = item;
+            flow.components[item.id] = item;
 
-            if (!flows[lookUpKey].containers[item.pageContainerId].childCount)
-                flows[lookUpKey].containers[item.pageContainerId].childCount = 0;
+            if (!flow.containers[item.pageContainerId].childCount)
+                flow.containers[item.pageContainerId].childCount = 0;
 
-            flows[lookUpKey].containers[item.pageContainerId].childCount += 1;
+            flow.containers[item.pageContainerId].childCount += 1;
 
             if (data && Utils.contains(data, item.id, 'pageComponentId'))
-                flows[lookUpKey].components[item.id] = updateData(data, item, 'pageComponentId');
+                flow.components[item.id] = updateData(data, item, 'pageComponentId');
 
-            flows[lookUpKey].components[item.id] = decodeEntities(flows[lookUpKey].components[item.id], decodeTextArea);
+            flow.components[item.id] = decodeEntities(flow.components[item.id], decodeTextArea);
 
         });
     }
