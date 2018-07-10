@@ -1,5 +1,6 @@
 import { merge, isNil, set, lensPath, view, assoc } from 'ramda';
 import actionType from '../actions/actionType';
+import FluxAction from '../actions/FluxAction';
 import * as Model from '../services/model';
 import * as Utils from '../services/utils';
 import { shouldValidate } from '../services/validation';
@@ -9,20 +10,20 @@ import { isValid } from '../services/state';
 // Handles ALL modifications to components
 // All modifications must be made immutably
 
-function components(allComponents = {}, action) {
+function components(allComponents = {}, action: FluxAction) {
 
     switch (action.type) {
 
     case actionType.STATE_SET_COMPONENT: {
-        return updateComponent(allComponents, action);        
+        return updateComponent(allComponents, action.payload);        
     }
 
     case actionType.STATE_SET_COMPONENTS: {
-        return replaceComponents(allComponents, action);        
+        return replaceComponents(allComponents, action.payload);        
     }
 
     case actionType.STATE_RESET_COMPONENTS: {
-        return resetComponents(allComponents, action);        
+        return resetComponents(allComponents, action.payload);        
     }
 
     } // End switch

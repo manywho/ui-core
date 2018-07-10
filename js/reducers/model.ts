@@ -1,5 +1,6 @@
 import { merge, isNil, set, lensPath, view } from 'ramda';
 import actionType from '../actions/actionType';
+import FluxAction from '../actions/FluxAction';
 import * as Model from '../services/model';
 import * as Utils from '../services/utils';
 import { contentTypes } from '../services/component';
@@ -8,21 +9,23 @@ import { contentTypes } from '../services/component';
 // Handles ALL modifications to the model
 // All modifications must be made immutably
 
-function model(flows = {}, action) {
+function model(flows = {}, action: FluxAction) {
 
-    switch (action.type) {
+    const { type, payload } = action;
+
+    switch (type) {
 
     case actionType.MODEL_ADD_FLOW: {
-        const lookUpKey = Utils.getLookUpKey(action.flowKey);
-        return merge(flows, { [lookUpKey]: action.flow || {} });        
+        const lookUpKey = Utils.getLookUpKey(payload.flowKey);
+        return merge(flows, { [lookUpKey]: payload.flow || {} });        
     }
 
     case actionType.MODEL_SET_CONTAINERS: {
-        return setContainers(flows, action);        
+        return setContainers(flows, payload);        
     }
 
     case actionType.MODEL_SET_COMPONENTS: {
-        return setComponents(flows, action);        
+        return setComponents(flows, payload);        
     }
 
     } // End switch
