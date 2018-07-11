@@ -14,15 +14,15 @@ function components(allComponents = {}, action: FluxAction) {
 
     switch (action.type) {
 
-    case actionType.STATE_SET_COMPONENT: {
+    case actionType.COMPONENT_UPDATE: {
         return updateComponent(allComponents, action.payload);        
     }
 
-    case actionType.STATE_SET_COMPONENTS: {
+    case actionType.COMPONENT_UPDATE_MANY: {
         return replaceComponents(allComponents, action.payload);        
     }
 
-    case actionType.STATE_RESET_COMPONENTS: {
+    case actionType.COMPONENT_RESET_ALL: {
         return resetComponents(allComponents, action.payload);        
     }
 

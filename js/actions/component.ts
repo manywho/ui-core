@@ -6,7 +6,7 @@ import FluxAction from './FluxAction';
 // https://github.com/redux-utilities/flux-standard-action
 
 export const updateComponent = ({ id, value, flowKey }): FluxAction => ({
-    type: actionType.STATE_SET_COMPONENT,
+    type: actionType.COMPONENT_UPDATE,
     payload: {
         flowKey,
         id,
@@ -15,7 +15,7 @@ export const updateComponent = ({ id, value, flowKey }): FluxAction => ({
 });
 
 export const replaceComponents = ({ values, flowKey }): FluxAction => ({
-    type: actionType.STATE_SET_COMPONENTS,
+    type: actionType.COMPONENT_UPDATE_MANY,
     payload: {
         flowKey,
         values,
@@ -23,7 +23,7 @@ export const replaceComponents = ({ values, flowKey }): FluxAction => ({
 });
 
 export const resetComponents = ({ models, invokeType, flowKey }): FluxAction => ({
-    type: actionType.STATE_RESET_COMPONENTS,
+    type: actionType.COMPONENT_RESET_ALL,
     payload: {
         flowKey,
         invokeType,

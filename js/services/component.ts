@@ -6,8 +6,9 @@ import * as Engine from './engine';
 import * as Settings from './settings';
 import * as Utils from './utils';
 
-const components = {};
-const aliases = {};
+import store from '../store';
+import { registerComponentType } from '../actions/componentType';
+import { registerAlias as registerAliasAction } from '../actions/alias';
 
 function getComponentType(item) {
     if ('containerType' in item)
@@ -44,12 +45,20 @@ export const contentTypes = {
  * @param alias Extra names that can also be used to fetch the component later
  */
 export const register = (name: string, component: React.Component | React.SFC, alias?: string[]) => {
-    components[name.toLowerCase()] = component;
 
-    if (alias)
-        alias.forEach((aliasName) => {
-            aliases[aliasName.toLowerCase()] = name.toLowerCase();
-        });
+    const nameLowerCase = name.toLowerCase();
+
+    store.dispatch(registerComponentType({
+        component,
+        name: nameLowerCase,
+    }));
+
+    if (Array.isArray(alias)) {
+        store.dispatch(registerAliasAction({
+            aliasList: alias,
+            componentName: nameLowerCase,
+        }));
+    }
 };
 
 /**
@@ -58,8 +67,18 @@ export const register = (name: string, component: React.Component | React.SFC, a
  * @param component
  */
 export const registerItems = (name: string, component: React.Component | React.SFC) => {
-    components['mw-' + name.toLowerCase()] = component;
-    aliases[name.toLowerCase()] = 'mw-items-container';
+    
+    const nameLowerCase = name.toLowerCase();
+
+    store.dispatch(registerComponentType({
+        component,
+        name: 'mw-' + nameLowerCase,
+    }));
+
+    store.dispatch(registerAliasAction({
+        aliasList: [nameLowerCase],
+        componentName: 'mw-items-container',
+    }));
 };
 
 /**
@@ -68,7 +87,13 @@ export const registerItems = (name: string, component: React.Component | React.S
  * @param name Name of a previously registered component
  */
 export const registerAlias = (alias: string, name: string) => {
-    aliases[alias.toLowerCase()] = name;
+
+    const nameLowerCase = name.toLowerCase();
+
+    store.dispatch(registerAliasAction({
+        aliasList: [alias],
+        componentName: nameLowerCase,
+    }));
 };
 
 /**y
@@ -77,8 +102,18 @@ export const registerAlias = (alias: string, name: string) => {
  * @param component
  */
 export const registerContainer = (name: string, component: React.Component | React.SFC) => {
-    components['mw-' + name.toLowerCase()] = component;
-    aliases[name.toLowerCase()] = 'mw-container';
+
+    const nameLowerCase = name.toLowerCase();
+
+    store.dispatch(registerComponentType({
+        component,
+        name: 'mw-' + nameLowerCase,
+    }));
+
+    store.dispatch(registerAliasAction({
+        aliasList: [nameLowerCase],
+        componentName: 'mw-container',
+    }));
 };
 
 /**
@@ -86,6 +121,9 @@ export const registerContainer = (name: string, component: React.Component | Rea
  * @param model
  */
 export const get = (model: any) => {
+
+    const { aliases, componentTypes: components } = store.getState();
+
     let componentType = getComponentType(model).toLowerCase();
 
     if (aliases[componentType])
@@ -105,6 +143,9 @@ export const get = (model: any) => {
  * @param name Name of the component
  */
 export const getByName = (name: string) => {
+
+    const { aliases, componentTypes: components } = store.getState();
+
     if (name && aliases[name.toLowerCase()])
         name = aliases[name.toLowerCase()];
 
@@ -129,6 +170,9 @@ export const getChildComponents = (children: any[], id: string, flowKey: string)
  * @param flowKey
  */
 export const getOutcomes = (outcomes: any[], flowKey: string): any[] => {
+
+    const { componentTypes: components } = store.getState();
+
     return outcomes
         .sort((a, b) => a.order - b.order)
         .map(item => React.createElement(components['outcome'], { flowKey, id: item.id, key: item.id }));
