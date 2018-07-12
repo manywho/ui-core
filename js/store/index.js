@@ -1,18 +1,29 @@
-import { createStore, combineReducers } from 'redux';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { composeWithDevTools } from 'redux-devtools-extension';
+import freeze from './freeze';
 import * as reducers from '../reducers';
 
 // Creates and exports the application store from all reducers
 // All redux middleware is added here
-// Adds the store to the global manywho object so that it's available in the ui as a provider
-// The store should not be accessed or changed directly
+// The store state should not be accessed or changed directly
 // Use the getState method to view the current state
 // All changes to state must go through an action and reducer
 
-const store = createStore(
-    combineReducers(reducers),
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+const reduxMiddleware = [];
+
+if (false /* isDevelopment */) {
+    // This freezes the entire state object to ensure all state mutations are made immutably
+    reduxMiddleware.push(freeze);        
+}
+
+const reducer = combineReducers(reducers);
+const enhancers = composeWithDevTools(
+    applyMiddleware(...reduxMiddleware),
 );
 
-window.manywho.__store__ = store;
+const store = createStore(
+    reducer,
+    enhancers
+);
 
 export default store;

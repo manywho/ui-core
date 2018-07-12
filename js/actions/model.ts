@@ -30,3 +30,10 @@ export const addFlow = ({ flowKey }): FluxAction => ({
         flowKey,
     },
 });
+
+export const removeFlow = ({ flowKey }): FluxAction => ({
+    type: actionType.MODEL_REMOVE_FLOW,
+    payload: { 
+        flowKey,
+    },
+});

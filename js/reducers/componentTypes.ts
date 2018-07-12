@@ -13,8 +13,6 @@ function componentTypes(componentTypes = {}, action: FluxAction) {
     switch (type) {
 
     case actionType.COMPONENT_TYPE_REGISTER: {
-
-        console.log(payload.name, payload.component, componentTypes);
         return assoc(payload.name, payload.component, componentTypes);
     }
 

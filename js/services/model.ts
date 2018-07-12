@@ -8,7 +8,12 @@ import * as State from './state';
 import * as Utils from './utils';
 
 import store from '../store';
-import { replaceComponents, addFlow, replaceContainers } from '../actions/model';
+import { 
+    replaceComponents, 
+    addFlow, 
+    removeFlow, 
+    replaceContainers,
+} from '../actions/model';
 
 function decodeEntities(item, textArea) {
 
@@ -100,10 +105,10 @@ function getNavigationItems(itemsResponse, dataResponse) {
 }
 
 function hideContainers(lookUpKey) {
-    const { model: flowModel } = store.getState();
-    const containers = Object.keys(flowModel[lookUpKey].containers).map(key => flowModel[lookUpKey].containers[key]);
-    const components = Object.keys(flowModel[lookUpKey].components).map(key => flowModel[lookUpKey].components[key]);
-    const outcomes = Object.keys(flowModel[lookUpKey].outcomes).map(key => flowModel[lookUpKey].outcomes[key]);
+    const { model: flows } = store.getState();
+    const containers = Object.keys(flows[lookUpKey].containers).map(key => flows[lookUpKey].containers[key]);
+    const components = Object.keys(flows[lookUpKey].components).map(key => flows[lookUpKey].components[key]);
+    const outcomes = Object.keys(flows[lookUpKey].outcomes).map(key => flows[lookUpKey].outcomes[key]);
 
     containers
         .filter(container => !container.parent)
@@ -142,32 +147,32 @@ export interface INotification {
  */
 export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    flowModel[lookUpKey].containers = {};
-    flowModel[lookUpKey].components = {};
-    flowModel[lookUpKey].outcomes = {};
-    flowModel[lookUpKey].label = null;
-    flowModel[lookUpKey].notifications = [];
-    flowModel[lookUpKey].stateValues = [];
-    flowModel[lookUpKey].preCommitStateValues = [];
+    flows[lookUpKey].containers = {};
+    flows[lookUpKey].components = {};
+    flows[lookUpKey].outcomes = {};
+    flows[lookUpKey].label = null;
+    flows[lookUpKey].notifications = [];
+    flows[lookUpKey].stateValues = [];
+    flows[lookUpKey].preCommitStateValues = [];
 
-    flowModel[lookUpKey].rootFaults = [];
+    flows[lookUpKey].rootFaults = [];
 
     if (engineInvokeResponse)
-        flowModel[lookUpKey].parentStateId = engineInvokeResponse.parentStateId;
+        flows[lookUpKey].parentStateId = engineInvokeResponse.parentStateId;
 
     if (engineInvokeResponse && engineInvokeResponse.mapElementInvokeResponses) {
 
-        flowModel[lookUpKey].invokeType = engineInvokeResponse.invokeType;
-        flowModel[lookUpKey].waitMessage = engineInvokeResponse.notAuthorizedMessage || engineInvokeResponse.waitMessage;
-        flowModel[lookUpKey].vote = engineInvokeResponse.voteResponse || null;
+        flows[lookUpKey].invokeType = engineInvokeResponse.invokeType;
+        flows[lookUpKey].waitMessage = engineInvokeResponse.notAuthorizedMessage || engineInvokeResponse.waitMessage;
+        flows[lookUpKey].vote = engineInvokeResponse.voteResponse || null;
 
         if (engineInvokeResponse.mapElementInvokeResponses[0].pageResponse) {
 
-            flowModel[lookUpKey].label = engineInvokeResponse.mapElementInvokeResponses[0].pageResponse.label;
+            flows[lookUpKey].label = engineInvokeResponse.mapElementInvokeResponses[0].pageResponse.label;
 
             setAttributes(flowKey, engineInvokeResponse.mapElementInvokeResponses[0].pageResponse.attributes || null);
 
@@ -183,15 +188,15 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
 
         if (engineInvokeResponse.mapElementInvokeResponses[0].outcomeResponses)
             engineInvokeResponse.mapElementInvokeResponses[0].outcomeResponses.forEach((item) => {
-                flowModel[lookUpKey].outcomes[item.id.toLowerCase()] = item;
+                flows[lookUpKey].outcomes[item.id.toLowerCase()] = item;
             });
 
         hideContainers(lookUpKey);
 
         if (engineInvokeResponse.mapElementInvokeResponses[0].rootFaults) {
 
-            flowModel[lookUpKey].rootFaults = [];
-            flowModel[lookUpKey].notifications = flowModel[lookUpKey].notifications || [];
+            flows[lookUpKey].rootFaults = [];
+            flows[lookUpKey].notifications = flows[lookUpKey].notifications || [];
 
             for (const faultName in engineInvokeResponse.mapElementInvokeResponses[0].rootFaults) {
 
@@ -206,9 +211,9 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
 
                 fault.name = faultName;
 
-                flowModel[lookUpKey].rootFaults.push(fault);
+                flows[lookUpKey].rootFaults.push(fault);
 
-                flowModel[lookUpKey].notifications.push({
+                flows[lookUpKey].notifications.push({
                     message: fault.message,
                     position: 'center',
                     type: 'danger',
@@ -223,8 +228,8 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
         if (Settings.global('history', flowKey) && Utils.isEqual(engineInvokeResponse.invokeType, 'FORWARD', true))
             setHistory(engineInvokeResponse, flowKey);
 
-        flowModel[lookUpKey].preCommitStateValues = engineInvokeResponse.preCommitStateValues;
-        flowModel[lookUpKey].stateValues = engineInvokeResponse.stateValues;
+        flows[lookUpKey].preCommitStateValues = engineInvokeResponse.preCommitStateValues;
+        flows[lookUpKey].stateValues = engineInvokeResponse.stateValues;
 
         switch (engineInvokeResponse.invokeType.toLowerCase()) {
         case 'wait':
@@ -234,7 +239,7 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
 
     }
     else if (Utils.isEqual(engineInvokeResponse.invokeType, 'not_allowed', true))
-        flowModel[lookUpKey].notifications.push({
+        flows[lookUpKey].notifications.push({
             message: 'You are not authorized to access this content. Please contact your administrator for more details.',
             position: 'center',
             type: 'danger',
@@ -251,12 +256,12 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
  */
 export const parseEngineSyncResponse = (response, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (response.invokeType)
-        flowModel[lookUpKey].invokeType = response.invokeType;
+        flows[lookUpKey].invokeType = response.invokeType;
 
     if (response.mapElementInvokeResponses) {
 
@@ -265,13 +270,13 @@ export const parseEngineSyncResponse = (response, flowKey: string) => {
 
             // Steps will only ever have one container, the id is re-generated server side so it won't match up here, grab the existing id instead
             if (Utils.isEqual(response.mapElementInvokeResponses[0].developerName, 'step', true))
-                containerId = Object.keys(flowModel[lookUpKey].containers)[0];
+                containerId = Object.keys(flows[lookUpKey].containers)[0];
 
-            flowModel[lookUpKey].containers[containerId] = Utils.extend(flowModel[lookUpKey].containers[containerId], item);
+            flows[lookUpKey].containers[containerId] = Utils.extend(flows[lookUpKey].containers[containerId], item);
         });
 
         response.mapElementInvokeResponses[0].pageResponse.pageComponentDataResponses.forEach((item) => {
-            flowModel[lookUpKey].components[item.pageComponentId] = Utils.extend(flowModel[lookUpKey].components[item.pageComponentId], item, false);
+            flows[lookUpKey].components[item.pageComponentId] = Utils.extend(flows[lookUpKey].components[item.pageComponentId], item, false);
         });
 
         hideContainers(lookUpKey);
@@ -287,28 +292,28 @@ export const parseEngineSyncResponse = (response, flowKey: string) => {
  */
 export const parseNavigationResponse = (id: string, response, flowKey: string, currentMapElementId: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    flowModel[lookUpKey].navigation = {};
+    flows[lookUpKey].navigation = {};
 
-    flowModel[lookUpKey].navigation[id] = {
+    flows[lookUpKey].navigation[id] = {
         culture: response.culture,
         developerName: response.developerName,
         label: response.label,
         tags: response.tags,
     };
 
-    flowModel[lookUpKey].navigation[id].items = getNavigationItems(response.navigationItemResponses, response.navigationItemDataResponses);
-    flowModel[lookUpKey].navigation[id].isVisible = response.isVisible;
-    flowModel[lookUpKey].navigation[id].isEnabled = response.isEnabled;
+    flows[lookUpKey].navigation[id].items = getNavigationItems(response.navigationItemResponses, response.navigationItemDataResponses);
+    flows[lookUpKey].navigation[id].isVisible = response.isVisible;
+    flows[lookUpKey].navigation[id].isEnabled = response.isEnabled;
 
     let selectedItem = null;
-    for (const itemId in flowModel[lookUpKey].navigation[id].items) {
+    for (const itemId in flows[lookUpKey].navigation[id].items) {
 
-        if (flowModel[lookUpKey].navigation[id].items[itemId].isCurrent) {
-            selectedItem = flowModel[lookUpKey].navigation[id].items[itemId];
+        if (flows[lookUpKey].navigation[id].items[itemId].isCurrent) {
+            selectedItem = flows[lookUpKey].navigation[id].items[itemId];
             break;
         }
 
@@ -316,10 +321,10 @@ export const parseNavigationResponse = (id: string, response, flowKey: string, c
 
     if (selectedItem == null && currentMapElementId) {
 
-        for (const itemId in flowModel[lookUpKey].navigation[id].items) {
+        for (const itemId in flows[lookUpKey].navigation[id].items) {
 
-            if (Utils.isEqual(flowModel[lookUpKey].navigation[id].items[itemId].locationMapElementId, currentMapElementId, true)) {
-                flowModel[lookUpKey].navigation[id].items[itemId].isCurrent = true;
+            if (Utils.isEqual(flows[lookUpKey].navigation[id].items[itemId].locationMapElementId, currentMapElementId, true)) {
+                flows[lookUpKey].navigation[id].items[itemId].isCurrent = true;
                 break;
             }
 
@@ -330,16 +335,16 @@ export const parseNavigationResponse = (id: string, response, flowKey: string, c
     const parentStateId = getParentStateId(flowKey);
 
     if (parentStateId)
-        flowModel[lookUpKey].navigation[id].returnToParent = React.createElement(Component.getByName('returnToParent'), { flowKey, parentStateId });
+        flows[lookUpKey].navigation[id].returnToParent = React.createElement(Component.getByName('returnToParent'), { flowKey, parentStateId });
 };
 
 /**
  * Get the label of the current page
  */
 export const getLabel = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].label;
+    return flows[lookUpKey].label;
 };
 
 /**
@@ -347,22 +352,22 @@ export const getLabel = (flowKey: string) => {
  */
 export const getChildren = (containerId: string, flowKey: string) => {
     
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey] === undefined || flowModel[lookUpKey].containers === undefined)
+    if (flows[lookUpKey] === undefined || flows[lookUpKey].containers === undefined)
         return [];
 
     if (containerId === 'root')
-        return Utils.getAll(flowModel[lookUpKey].containers, undefined, 'parent');
+        return Utils.getAll(flows[lookUpKey].containers, undefined, 'parent');
 
     let children = [];
-    const container = flowModel[lookUpKey].containers[containerId];
+    const container = flows[lookUpKey].containers[containerId];
 
     if (container != null) {
-        children = children.concat(Utils.getAll(flowModel[lookUpKey].containers, containerId, 'parent'));
-        children = children.concat(Utils.getAll(flowModel[lookUpKey].components, containerId, 'pageContainerId'));
+        children = children.concat(Utils.getAll(flows[lookUpKey].containers, containerId, 'parent'));
+        children = children.concat(Utils.getAll(flows[lookUpKey].components, containerId, 'pageContainerId'));
     }
 
     children.sort((a, b) => a.order - b.order);
@@ -374,28 +379,28 @@ export const getChildren = (containerId: string, flowKey: string) => {
  * Get a container by id
  */
 export const getContainer = (containerId: string, flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].containers[containerId];
+    return flows[lookUpKey].containers[containerId];
 };
 
 /**
  * Get a component by id
  */
 export const getComponent = (componentId: string, flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].components[componentId];
+    return flows[lookUpKey].components[componentId];
 };
 
 /**
  * Get a component by name
  */
 export const getComponentByName = (name: string, flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    const components = flowModel[lookUpKey].components;
+    const components = flows[lookUpKey].components;
 
     if (components) {
         for (const id in components) {
@@ -411,20 +416,20 @@ export const getComponentByName = (name: string, flowKey: string) => {
  * Get all the components
  */
 export const getComponents = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].components;
+    return flows[lookUpKey].components;
 };
 
 /**
  * Get an outcome by id
  */
 export const getOutcome = (id: string, flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey].outcomes)
-        return flowModel[lookUpKey].outcomes[id.toLowerCase()];
+    if (flows[lookUpKey].outcomes)
+        return flows[lookUpKey].outcomes[id.toLowerCase()];
 };
 
 /**
@@ -433,14 +438,14 @@ export const getOutcome = (id: string, flowKey: string) => {
  */
 export const getOutcomes = (id: string, flowKey: string): any[] => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey] === undefined || flowModel[lookUpKey].outcomes === undefined)
+    if (flows[lookUpKey] === undefined || flows[lookUpKey].outcomes === undefined)
         return [];
 
-    const outcomesArray = Utils.convertToArray(flowModel[lookUpKey].outcomes) || [];
+    const outcomesArray = Utils.convertToArray(flows[lookUpKey].outcomes) || [];
 
     outcomesArray.sort((a, b) => a.order - b.order);
 
@@ -457,11 +462,11 @@ export const getOutcomes = (id: string, flowKey: string): any[] => {
  */
 export const getNotifications = (flowKey: string, position: string): INotification[] => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey].notifications)
-        return flowModel[lookUpKey].notifications.filter(notification => Utils.isEqual(notification.position, position, true));
+    if (flows[lookUpKey].notifications)
+        return flows[lookUpKey].notifications.filter(notification => Utils.isEqual(notification.position, position, true));
 
     return [];
 };
@@ -471,13 +476,13 @@ export const getNotifications = (flowKey: string, position: string): INotificati
  */
 export const removeNotification = (flowKey: string, notification: INotification) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey]) {
+    if (flows[lookUpKey]) {
 
-        const index = flowModel[lookUpKey].notifications.indexOf(notification);
-        flowModel[lookUpKey].notifications.splice(index, 1);
+        const index = flows[lookUpKey].notifications.indexOf(notification);
+        flows[lookUpKey].notifications.splice(index, 1);
 
         Engine.render(flowKey);
     }
@@ -488,14 +493,14 @@ export const removeNotification = (flowKey: string, notification: INotification)
  */
 export const addNotification = (flowKey: string, notification: INotification) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey]) {
+    if (flows[lookUpKey]) {
 
-        flowModel[lookUpKey].notifications = flowModel[lookUpKey].notifications || [];
+        flows[lookUpKey].notifications = flows[lookUpKey].notifications || [];
 
-        flowModel[lookUpKey].notifications.push(notification);
+        flows[lookUpKey].notifications.push(notification);
         Engine.render(flowKey);
     }
 };
@@ -504,18 +509,18 @@ export const addNotification = (flowKey: string, notification: INotification) =>
  * @ignore
  */
 export const getSelectedNavigation = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].selectedNavigation;
+    return flows[lookUpKey].selectedNavigation;
 };
 
 /**
  * @ignore
  */
 export const setSelectedNavigation = (navigationId: string, flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    flowModel[lookUpKey].selectedNavigation = navigationId;
+    flows[lookUpKey].selectedNavigation = navigationId;
 };
 
 /**
@@ -523,11 +528,11 @@ export const setSelectedNavigation = (navigationId: string, flowKey: string) => 
  */
 export const getNavigation = (navigationId: string, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
     if (navigationId)
-        return flowModel[lookUpKey].navigation[navigationId];
+        return flows[lookUpKey].navigation[navigationId];
 };
 
 /**
@@ -535,11 +540,11 @@ export const getNavigation = (navigationId: string, flowKey: string) => {
  */
 export const getDefaultNavigationId = (flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (flowModel[lookUpKey].navigation)
-        return Object.keys(flowModel[lookUpKey].navigation)[0];
+    if (flows[lookUpKey].navigation)
+        return Object.keys(flows[lookUpKey].navigation)[0];
 };
 
 /**
@@ -568,54 +573,54 @@ export const getItem = (id: string, flowKey: string) => {
  * @ignore
  */
 export const getInvokeType = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].invokeType;
+    return flows[lookUpKey].invokeType;
 };
 
 /**
  * @ignore
  */
 export const getWaitMessage = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].waitMessage;
+    return flows[lookUpKey].waitMessage;
 };
 
 /**
  * @ignore
  */
 export const getPreCommitStateValues = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].preCommitStateValues;
+    return flows[lookUpKey].preCommitStateValues;
 };
 
 /**
  * @ignore
  */
 export const getStateValues = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].stateValues;
+    return flows[lookUpKey].stateValues;
 };
 
 /**
  * @ignore
  */
 export const getExecutionLog = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].executionLog;
+    return flows[lookUpKey].executionLog;
 };
 
 /**
  * @ignore
  */
 export const setExecutionLog = (flowKey: string, executionLog) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    flowModel[lookUpKey].executionLog = executionLog;
+    flows[lookUpKey].executionLog = executionLog;
 };
 
 /**
@@ -623,13 +628,13 @@ export const setExecutionLog = (flowKey: string, executionLog) => {
  */
 export const getHistory = (flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (!flowModel[lookUpKey].history)
-        flowModel[lookUpKey].history = [];
+    if (!flows[lookUpKey].history)
+        flows[lookUpKey].history = [];
 
-    return flowModel[lookUpKey].history;
+    return flows[lookUpKey].history;
 };
 
 /**
@@ -637,26 +642,26 @@ export const getHistory = (flowKey: string) => {
  */
 export const setHistory = (engineInvokeResponse, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    if (!flowModel[lookUpKey].history)
-        flowModel[lookUpKey].history = [];
+    if (!flows[lookUpKey].history)
+        flows[lookUpKey].history = [];
 
-    if (!flowModel[lookUpKey].lastInvoke)
-        flowModel[lookUpKey].lastInvoke = 'FORWARD';
+    if (!flows[lookUpKey].lastInvoke)
+        flows[lookUpKey].lastInvoke = 'FORWARD';
 
-    const length = flowModel[lookUpKey].history.length;
+    const length = flows[lookUpKey].history.length;
     let outcomes = null;
 
-    if (Utils.isEqual(flowModel[lookUpKey].lastInvoke, 'FORWARD', true)) {
+    if (Utils.isEqual(flows[lookUpKey].lastInvoke, 'FORWARD', true)) {
 
         if (engineInvokeResponse.mapElementInvokeResponses[0].outcomeResponses)
             outcomes = engineInvokeResponse.mapElementInvokeResponses[0].outcomeResponses.map((outcome) => {
                 return { name: outcome.developerName, id: outcome.id, label: outcome.label, order: outcome.order };
             });
 
-        flowModel[lookUpKey].history[length] = Utils.extend(flowModel[lookUpKey].history[length] || {}, [{
+        flows[lookUpKey].history[length] = Utils.extend(flows[lookUpKey].history[length] || {}, [{
             outcomes,
             name: engineInvokeResponse.mapElementInvokeResponses[0].developerName,
             id: engineInvokeResponse.mapElementInvokeResponses[0].mapElementId,
@@ -671,22 +676,22 @@ export const setHistory = (engineInvokeResponse, flowKey: string) => {
  */
 export const setHistorySelectedOutcome = (selectedOutcome, invokeType: string, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    flowModel[lookUpKey].lastInvoke = invokeType;
+    flows[lookUpKey].lastInvoke = invokeType;
 
     if (selectedOutcome) {
 
-        if (!flowModel[lookUpKey].history)
-            flowModel[lookUpKey].history = [];
+        if (!flows[lookUpKey].history)
+            flows[lookUpKey].history = [];
 
-        const length = flowModel[lookUpKey].history.length - 1;
+        const length = flows[lookUpKey].history.length - 1;
 
-        if (!flowModel[lookUpKey].history[length])
-            flowModel[lookUpKey].history[length] = {};
+        if (!flows[lookUpKey].history[length])
+            flows[lookUpKey].history[length] = {};
 
-        flowModel[lookUpKey].history[length].selectedOutcome = selectedOutcome;
+        flows[lookUpKey].history[length].selectedOutcome = selectedOutcome;
     }
 };
 
@@ -695,20 +700,20 @@ export const setHistorySelectedOutcome = (selectedOutcome, invokeType: string, f
  */
 export const popHistory = (mapElementId: string, flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
 
     const lookUpKey = Utils.getLookUpKey(flowKey);
 
-    const length = flowModel[lookUpKey].history.length;
+    const length = flows[lookUpKey].history.length;
 
     for (let i = length; i > 0; i -= 1) {
 
-        const mapElement = flowModel[lookUpKey].history[i - 1];
+        const mapElement = flows[lookUpKey].history[i - 1];
 
         if (mapElement.id === mapElementId)
             break;
 
-        flowModel[lookUpKey].history.pop();
+        flows[lookUpKey].history.pop();
     }
 };
 
@@ -724,53 +729,41 @@ export const isContainer = (item) => {
  */
 export const initializeModel = (flowKey: string) => {
 
-    const { model: flowModel } = store.getState();
-
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-    
     store.dispatch(addFlow({ flowKey }));
-    
-    if (!flowModel[lookUpKey])
-        flowModel[lookUpKey] = {};
 };
 
 /**
  * @ignore
  */
 export const getAttributes = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].attributes;
+    return flows[lookUpKey].attributes;
 };
 
 /**
  * @ignore
  */
 export const getParentStateId = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].parentStateId;
+    return flows[lookUpKey].parentStateId;
 };
 
 /**
  * Remove the local cache of the model for this state
  */
-export const deleteFlowModel = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
-
-    const lookUpKey = Utils.getLookUpKey(flowKey);
-
-    flowModel[lookUpKey] = null;
-    delete flowModel[lookUpKey];
+export const deleteflows = (flowKey: string) => {
+    store.dispatch(removeFlow({ flowKey }));
 };
 
 /**
  * @ignore
  */
 export const getRootFaults = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].rootFaults || [];
+    return flows[lookUpKey].rootFaults || [];
 };
 
 /**
@@ -793,18 +786,18 @@ export const setComponents = (flowKey: string, components: any[], data: any) => 
  * @ignore
  */
 export const setAttributes = (flowKey: string, attributes: any) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    flowModel[lookUpKey].attributes = attributes;
+    flows[lookUpKey].attributes = attributes;
 };
 
 /**
  * @ignore
  */
 export const setModal = (flowKey: string, modal) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    flowModel[lookUpKey].modal = modal;
+    flows[lookUpKey].modal = modal;
     Engine.render(flowKey);
 };
 
@@ -812,7 +805,7 @@ export const setModal = (flowKey: string, modal) => {
  * @ignore
  */
 export const getModal = (flowKey: string) => {
-    const { model: flowModel } = store.getState();
+    const { model: flows } = store.getState();
     const lookUpKey = Utils.getLookUpKey(flowKey);
-    return flowModel[lookUpKey].modal;
+    return flows[lookUpKey].modal;
 };

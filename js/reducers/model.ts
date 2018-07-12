@@ -1,7 +1,6 @@
-import { merge, isNil, set, lensPath, view } from 'ramda';
+import { merge, dissoc, isNil, set, lensPath, view } from 'ramda';
 import actionType from '../actions/actionType';
 import FluxAction from '../actions/FluxAction';
-import * as Model from '../services/model';
 import * as Utils from '../services/utils';
 import { contentTypes } from '../services/component';
 
@@ -18,6 +17,11 @@ function model(flows = {}, action: FluxAction) {
     case actionType.MODEL_ADD_FLOW: {
         const lookUpKey = Utils.getLookUpKey(payload.flowKey);
         return merge(flows, { [lookUpKey]: payload.flow || {} });        
+    }
+
+    case actionType.MODEL_REMOVE_FLOW: {
+        const lookUpKey = Utils.getLookUpKey(payload.flowKey);
+        return dissoc(lookUpKey, flows);    
     }
 
     case actionType.MODEL_SET_CONTAINERS: {
