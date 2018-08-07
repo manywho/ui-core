@@ -617,7 +617,6 @@ export const initialize = (
             authenticationToken, 
             config.options,
        );
-
     }
     else {
 
