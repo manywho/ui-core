@@ -39,6 +39,7 @@ test.serial('Parse Response', (t) => {
         voteResponse: 'vote',
         mapElementInvokeResponses: [
             {
+                mapElementId: '12345',
                 pageResponse: {
                     label: 'label',
                     attributes: {
@@ -112,15 +113,15 @@ test.serial('Parse Response', (t) => {
 
     const expectedContainer: any = Object.assign(
         {},
-        response.mapElementInvokeResponses[0].pageResponse.pageContainerResponses[0], 
+        response.mapElementInvokeResponses[0].pageResponse.pageContainerResponses[0],
         response.mapElementInvokeResponses[0].pageResponse.pageContainerDataResponses[0],
     );
     expectedContainer.childCount = 2;
     t.deepEqual(Model.getContainer('container-1', flowKey), expectedContainer);
 
     const expectedComponent = Object.assign(
-        {}, 
-        response.mapElementInvokeResponses[0].pageResponse.pageComponentResponses[0], 
+        {},
+        response.mapElementInvokeResponses[0].pageResponse.pageComponentResponses[0],
         response.mapElementInvokeResponses[0].pageResponse.pageComponentDataResponses[0],
     );
     t.deepEqual(Model.getComponent('component-1', flowKey), expectedComponent);
@@ -145,6 +146,11 @@ test.serial('Parse Response', (t) => {
 
     const expectedNotifications = [
         {
+            fault: {
+                message: 'fault message',
+                name: 'fault',
+            },
+            mapElement: '12345',
             message: 'fault message',
             position: 'center',
             type: 'danger',

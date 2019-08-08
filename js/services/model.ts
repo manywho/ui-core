@@ -233,7 +233,14 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
                         URI: ${fault.responseBody.uri}`;
                 }
 
+                let mapElement;
+                if (engineInvokeResponse.mapElementInvokeResponses[0].mapElementId) {
+                    mapElement = engineInvokeResponse.mapElementInvokeResponses[0].mapElementId;
+                }
+
                 flowModel[lookUpKey].notifications.push({
+                    fault,
+                    mapElement,
                     message: notificationMessage,
                     position: 'center',
                     type: 'danger',
