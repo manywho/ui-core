@@ -904,6 +904,19 @@ export const move = (outcome: any, flowKey: string)  => {
 
         const isValid = State.isAllValid(flowKey);
         if (!isValid) {
+
+            // Update model with client-side validated component state.
+            const components = State.getComponents(flowKey);
+            if (components) {
+                for (const id in components) {
+                    const model = Model.getComponent(id, flowKey);
+                    if (model) {
+                        model.isValid = components[id].isValid;
+                        model.validationMessage = components[id].validationMessage;
+                    }
+                }
+            }
+
             render(flowKey);
 
             requestAnimationFrame(() => {
@@ -1355,4 +1368,3 @@ export const render = (flowKey: string) => {
         ReactDOM.render(React.createElement(Component.getByName(Utils.extractElement(flowKey)), { flowKey, container }), container);
     }
 };
-
