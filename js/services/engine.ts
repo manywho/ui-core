@@ -805,7 +805,7 @@ export const initialize = (
     }
 
     if (options.theme && manywho.theming) {
-        manywho.theming.apply(options.theme);
+        manywho.theming.apply(options.theme, tenantId);
     }
 
     const storedConfig = window.sessionStorage.getItem('oauth-' + stateId);
