@@ -60,7 +60,7 @@
     "webpack": "4.26.1",
     "webpack-bundle-analyzer": "3.3.2",
     "webpack-cli": "3.3.7",
-    "xhr-mock": "1.9.0"
+    "xhr-mock": "2.5.0"
   },
   "dependencies": {
     "jquery": "3.4.1",
