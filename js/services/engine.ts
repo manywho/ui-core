@@ -1251,9 +1251,9 @@ export const fileDataRequest = (
             State.setComponentLoading(id, null, flowKey);
             render(flowKey);
 
-            if (error) {
-                return error;
-            }
+            // if (error) {
+            //    return error;
+            // }
         });
 
 };

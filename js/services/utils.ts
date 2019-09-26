@@ -77,9 +77,15 @@ export const getNumber = (value) => {
  * Remove param with the provided key from a url
  */
 export const removeURIParam = (uri, key) => {
+
+    if (!uri) {
+        return null;
+    }
+
     const anchorElement = document.createElement('a');
 
-    anchorElement.href = uri;
+    key = encodeURIComponent(key);
+    anchorElement.href = decodeURI(uri);
 
     const currentQuery = anchorElement.search;
     const hasQuery = currentQuery !== '';
@@ -95,7 +101,8 @@ export const removeURIParam = (uri, key) => {
         }
     }
 
-    anchorElement.search = `?${paramStringPairs.join('&')}`;
+    const newQueryParams = paramStringPairs.join('&');
+    anchorElement.search = newQueryParams ? `?${newQueryParams}` : '';
 
     return anchorElement.href;
 };
@@ -131,6 +138,7 @@ export const setURIParam = (uri, key, value) => {
  * Update the url in the browser to the join url
  */
 export const replaceBrowserUrl = (response: any) => {
+
     // Check to make sure the browser supports the switch of the url
     if (history && history.replaceState) {
         const queryParameters = parseQueryString(window.location.search.substring(1));

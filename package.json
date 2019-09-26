@@ -14,7 +14,7 @@
     "dist": "webpack -p --config webpack.production.config.js",
     "lint": "tslint -p tsconfig.json -c tslint.json js/**/*.ts --fix",
     "lint:docs": "tslint --project tsconfig.lint.json -c tslint.docs.json",
-    "test": "tsc -p tsconfig.test.json && nyc --reporter=html --reporter=lcov ava \"dist_test/test/*.js\" --timeout=10s --color --fail-fast -v",
+    "test": "jest --colors",
     "test:coverage": "nyc check-coverage --lines 80 --functions 80 --branches 60",
     "test:report": "npm test -- --tap | tap-xunit > test-report.xml",
     "test:watch": "chokidar \"test/**/*.ts\" -c \"npm run test\"",
@@ -28,7 +28,8 @@
     "publish/"
   ],
   "devDependencies": {
-    "@types/jquery": "3.2.11",
+    "@types/jest": "^24.0.18",
+    "@types/jquery": "^3.3.31",
     "@types/lodash": "4.14.101",
     "@types/mockery": "1.4.29",
     "@types/node": "12.7.2",
@@ -43,6 +44,8 @@
     "del": "4.1.1",
     "form-data": "2.2.0",
     "husky": "3.0.4",
+    "jest": "^24.9.0",
+    "jquery": "^3.4.1",
     "lint-staged": "4.0.1",
     "mock-socket": "9.0.0",
     "mockery": "2.1.0",
@@ -50,12 +53,13 @@
     "script-loader": "0.7.0",
     "sinon": "3.2.1",
     "tap-xunit": "2.4.1",
+    "ts-jest": "^24.1.0",
     "ts-loader": "4.4.2",
     "tslint": "5.8.0",
     "tslint-config-airbnb": "5.9.2",
     "tslint-loader": "3.6.0",
     "typedoc": "0.14.2",
-    "typescript": "2.9.2",
+    "typescript": "^3.6.3",
     "uglifyjs-webpack-plugin": "0.4.6",
     "webpack": "4.26.1",
     "webpack-bundle-analyzer": "3.3.2",
@@ -63,7 +67,6 @@
     "xhr-mock": "1.9.0"
   },
   "dependencies": {
-    "jquery": "3.4.1",
     "license-webpack-plugin": "1.1.1",
     "loglevel": "1.4.1",
     "moment": "2.19.3",
@@ -78,6 +81,17 @@
   "ava": {
     "require": [
       "./dist_test/test/helpers/setup-browser-env.js"
+    ]
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "**/js/services/*.ts"
+    ],
+    "testURL": "https://localhost/",
+    "setupFiles": [
+      "<rootDir>/test-setup.js"
     ]
   }
 }
