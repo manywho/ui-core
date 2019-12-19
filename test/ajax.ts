@@ -14,7 +14,7 @@ test.before((t) => {
             platform: {
                 uri: 'https://flow.manywho.com',
             },
-        },                  
+        },
         null,
     );
 
@@ -50,7 +50,7 @@ test.cb.serial('Login', (t) => {
     const expected = {
         username: 'username',
         password: 'password',
-        token: null,
+        token: 'token',
         sessionToken: 'sessionId',
         sessionUrl: 'sessionUrl',
         loginUrl: 'loginUrl',
@@ -69,7 +69,7 @@ test.cb.serial('Login', (t) => {
         return res.status(200).body();
     });
 
-    Ajax.login(expected.loginUrl, expected.username, expected.password, expected.sessionToken, expected.sessionUrl, loginStateId, tenantId);
+    Ajax.login(expected.loginUrl, expected.username, expected.password, expected.sessionToken, expected.sessionUrl, loginStateId, tenantId, expected.token);
 });
 
 test.cb.serial('Initialize', (t) => {
@@ -219,8 +219,8 @@ test.cb.serial('ObjectData Request', (t) => {
         token,
         expected.listFilter.limit,
         expected.listFilter.search,
-        expected.listFilter.orderByPropertyDeveloperName, 
-        expected.listFilter.orderByDirectionType, 
+        expected.listFilter.orderByPropertyDeveloperName,
+        expected.listFilter.orderByDirectionType,
         3,
     );
 });
@@ -250,13 +250,13 @@ test.cb.serial('FileData Request', (t) => {
 
     Ajax.dispatchFileDataRequest(
         {},
-        tenantId, 
-        stateId, 
-        token, 
-        null, 
-        expected.listFilter.search, 
-        expected.listFilter.orderByPropertyDeveloperName, 
-        expected.listFilter.orderByDirectionType, 
+        tenantId,
+        stateId,
+        token,
+        null,
+        expected.listFilter.search,
+        expected.listFilter.orderByPropertyDeveloperName,
+        expected.listFilter.orderByDirectionType,
         3,
     );
 });

@@ -237,6 +237,7 @@ function initializeSimpleWithAuthorization(
                         null,
                         response.stateId,
                         tenantId,
+                        null,
                     );
                 }
 
@@ -330,7 +331,7 @@ function initializeSimpleWithAuthorization(
         .then(() => flowKey);
 }
 
-function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, container, options, authenticationToken, stateId) {
+function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, container, options, token, stateId) {
 
     let flowKey = callback.flowKey;
     let streamId = null;
@@ -340,6 +341,16 @@ function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, 
         : (flowKey)
             ? Utils.extractStateId(flowKey)
             : null;
+
+    let authenticationToken = null;
+
+    if (token) {
+        // Use the given token to get the fully authenticated runtime token
+        Ajax.login(null,  null, null, null, null, stateId, tenantId, token)
+            .then((response) => {
+                authenticationToken = response;
+            });
+    }
 
     const initializationRequest = Json.generateInitializationRequest(
         { id: flowId, versionId: flowVersionId },
@@ -805,7 +816,7 @@ export const initialize = (
 
     if (!tenantId && (!stateId || (!flowId && !flowVersionId))) {
 
-        Log.error('tenantId & stateId, or tenatntId & flowId & flowVersionId must be specified');
+        Log.error('tenantId & stateId, or tenantId & flowId & flowVersionId must be specified');
         return;
 
     }

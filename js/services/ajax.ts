@@ -65,6 +65,7 @@ export const login = (
     sessionUrl: string,
     stateId: string,
     tenantId: string,
+    token: string,
 ): JQueryXHR => {
 
     Log.info('Logging into Flow State: \n    Id: ' + stateId);
@@ -74,7 +75,7 @@ export const login = (
         sessionUrl,
         username,
         password,
-        token: null,
+        token,
         sessionToken: sessionId,
     };
 
