@@ -65,7 +65,7 @@
   "dependencies": {
     "jquery": "3.4.1",
     "license-webpack-plugin": "1.1.1",
-    "loglevel": "1.4.1",
+    "loglevel": "1.6.4",
     "moment": "2.19.3",
     "numbro": "1.11.0",
     "ramda": "^0.26.1",
