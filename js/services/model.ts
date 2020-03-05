@@ -251,6 +251,7 @@ export const parseEngineResponse = (engineInvokeResponse, flowKey: string) => {
 
         flowModel[lookUpKey].preCommitStateValues = engineInvokeResponse.preCommitStateValues;
         flowModel[lookUpKey].stateValues = engineInvokeResponse.stateValues;
+        flowModel[lookUpKey].frames = engineInvokeResponse.frames;
 
         switch (engineInvokeResponse.invokeType.toLowerCase()) {
         case 'wait':
@@ -616,6 +617,14 @@ export const getPreCommitStateValues = (flowKey: string) => {
 export const getStateValues = (flowKey: string) => {
     const lookUpKey = Utils.getLookUpKey(flowKey);
     return flowModel[lookUpKey].stateValues;
+};
+
+/**
+ * @ignore
+ */
+export const getFrames = (flowKey: string) => {
+    const lookUpKey = Utils.getLookUpKey(flowKey);
+    return flowModel[lookUpKey].frames;
 };
 
 /**
