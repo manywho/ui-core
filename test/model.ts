@@ -106,21 +106,22 @@ test.serial('Parse Response', (t) => {
         ],
         preCommitStateValues: 'preCommitStateValues',
         stateValues: 'stateValues',
+        frames: 'frames',
     };
 
     Model.parseEngineResponse(response, flowKey);
 
     const expectedContainer: any = Object.assign(
         {},
-        response.mapElementInvokeResponses[0].pageResponse.pageContainerResponses[0], 
+        response.mapElementInvokeResponses[0].pageResponse.pageContainerResponses[0],
         response.mapElementInvokeResponses[0].pageResponse.pageContainerDataResponses[0],
     );
     expectedContainer.childCount = 2;
     t.deepEqual(Model.getContainer('container-1', flowKey), expectedContainer);
 
     const expectedComponent = Object.assign(
-        {}, 
-        response.mapElementInvokeResponses[0].pageResponse.pageComponentResponses[0], 
+        {},
+        response.mapElementInvokeResponses[0].pageResponse.pageComponentResponses[0],
         response.mapElementInvokeResponses[0].pageResponse.pageComponentDataResponses[0],
     );
     t.deepEqual(Model.getComponent('component-1', flowKey), expectedComponent);
@@ -137,6 +138,7 @@ test.serial('Parse Response', (t) => {
     t.is(Model.getWaitMessage(flowKey), 'waitMessage');
     t.is(Model.getPreCommitStateValues(flowKey), 'preCommitStateValues');
     t.is(Model.getStateValues(flowKey), 'stateValues');
+    t.is(Model.getFrames(flowKey), 'frames');
 
     t.deepEqual(Model.getChildren('root', flowKey), [expectedContainer]);
     t.deepEqual(Model.getItem('container-1', flowKey), expectedContainer);
