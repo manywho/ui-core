@@ -342,15 +342,7 @@ function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, 
             ? Utils.extractStateId(flowKey)
             : null;
 
-    let authenticationToken = null;
-
-    if (token) {
-        // Use the given token to get the fully authenticated runtime token
-        Ajax.login(null,  null, null, null, null, stateId, tenantId, token)
-            .then((response) => {
-                authenticationToken = response;
-            });
-    }
+    let authenticationToken = token;
 
     const initializationRequest = Json.generateInitializationRequest(
         { id: flowId, versionId: flowVersionId },
@@ -372,7 +364,13 @@ function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, 
 
     }
 
-    const decoratedInitialization: Function = Authorization.authenticateTokenFromIdentityProvider(Ajax.initialize);
+    const decoratedInitialization: Function = Authorization.authenticateTokenFromIdentityProvider(
+        Ajax.initialize,
+        stateId,
+        authenticationToken,
+        tenantId,
+    );
+
     return decoratedInitialization(initializationRequest, tenantId, authenticationToken)
         .then(
             (response) => {
@@ -844,8 +842,6 @@ export const initialize = (
     checklocale();
 
     if (stateId && !isInitializing) {
-
-        const decoratedJoin: any = Authorization.authenticateTokenFromIdentityProvider(join);
         return join(
             config.tenantId,
             config.flowId,
@@ -858,8 +854,6 @@ export const initialize = (
 
     }
     else {
-
-        const decoratedInitialization: any = Authorization.authenticateTokenFromIdentityProvider(initializeWithAuthorization);
         return initializeWithAuthorization.call(
             this,
             {

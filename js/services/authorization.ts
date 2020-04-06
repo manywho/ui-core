@@ -4,9 +4,22 @@ import * as Json from './json';
 import * as State from './state';
 import * as Utils from './utils';
 
-export const authenticateTokenFromIdentityProvider = (func: Function) => {
+export const authenticateTokenFromIdentityProvider = (func: Function, stateId: string, token: string, tenantId: string) => {
     return function () {
-        return func.apply(this, arguments);
+        const funcArgs = arguments;
+        if (token) {
+
+            // Use the given token to get the fully authenticated runtime token
+            return Ajax.login(null,  null, null, null, null, stateId, tenantId, token)
+                .then((response) => {
+                    funcArgs[2] = response;
+                    return func.apply(this, funcArgs);
+                });
+        }
+
+        else {
+            return func.apply(this, funcArgs);
+        }
     };
 };
 
