@@ -4,6 +4,12 @@ import * as Json from './json';
 import * as State from './state';
 import * as Utils from './utils';
 
+export const authenticateTokenFromIdentityProvider = (func: Function) => {
+    return function () {
+        return func.apply(this, arguments);
+    };
+};
+
 /**
  * @hidden
  */

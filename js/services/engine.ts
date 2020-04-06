@@ -372,7 +372,8 @@ function initializeWithAuthorization(callback, tenantId, flowId, flowVersionId, 
 
     }
 
-    return Ajax.initialize(initializationRequest, tenantId, authenticationToken)
+    const decoratedInitialization: Function = Authorization.authenticateTokenFromIdentityProvider(Ajax.initialize);
+    return decoratedInitialization(initializationRequest, tenantId, authenticationToken)
         .then(
             (response) => {
 
@@ -549,7 +550,14 @@ function joinWithAuthorization(callback, flowKey) {
 
     Formatting.initialize(flowKey);
 
-    return Ajax.join(state.id, Utils.extractTenantId(flowKey), authenticationToken)
+    const decoratedJoin: Function = Authorization.authenticateTokenFromIdentityProvider(
+        Ajax.join,
+        state.id,
+        authenticationToken,
+        Utils.extractTenantId(flowKey),
+    );
+
+    return decoratedJoin(state.id, Utils.extractTenantId(flowKey), authenticationToken)
         .then((response) => {
 
             return isAuthorized(response, flowKey);
@@ -837,6 +845,7 @@ export const initialize = (
 
     if (stateId && !isInitializing) {
 
+        const decoratedJoin: any = Authorization.authenticateTokenFromIdentityProvider(join);
         return join(
             config.tenantId,
             config.flowId,
@@ -850,6 +859,7 @@ export const initialize = (
     }
     else {
 
+        const decoratedInitialization: any = Authorization.authenticateTokenFromIdentityProvider(initializeWithAuthorization);
         return initializeWithAuthorization.call(
             this,
             {
