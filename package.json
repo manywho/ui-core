@@ -63,7 +63,7 @@
     "xhr-mock": "1.9.0"
   },
   "dependencies": {
-    "jquery": "3.4.1",
+    "jquery": "3.5.0",
     "license-webpack-plugin": "1.1.1",
     "loglevel": "1.4.1",
     "moment": "2.19.3",
