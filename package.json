@@ -71,7 +71,7 @@
     "ramda": "^0.26.1",
     "react": "15.6.1",
     "react-dom": "15.6.1",
-    "socket.io": "2.2.0",
+    "socket.io": "2.4.0",
     "socket.io-client": "2.0.3",
     "webpack-dashboard": "3.0.5",
     "write-file": "1.0.0"
